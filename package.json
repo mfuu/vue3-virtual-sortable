@@ -1,6 +1,6 @@
 {
   "name": "vue-virtual-sortable",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "A virtual scrolling list component that can be sorted by dragging, support vue3",
   "main": "dist/virtual-list.min.js",
   "types": "types/index.d.ts",
@@ -42,7 +42,7 @@
   },
   "homepage": "https://github.com/mfuu/vue3-virtual-drag-list#readme",
   "dependencies": {
-    "sortable-dnd": "^0.6.22"
+    "sortable-dnd": "^0.6.23"
   },
   "devDependencies": {
     "@babel/core": "^7.15.0",
