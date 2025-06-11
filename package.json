@@ -38,9 +38,9 @@
   "license": "MIT",
   "private": false,
   "bugs": {
-    "url": "https://github.com/mfuu/vue3-virtual-drag-list/issues"
+    "url": "https://github.com/mfuu/vue3-virtual-sortable/issues"
   },
-  "homepage": "https://github.com/mfuu/vue3-virtual-drag-list#readme",
+  "homepage": "https://github.com/mfuu/vue3-virtual-sortable#readme",
   "dependencies": {
     "sortable-dnd": "^0.6.23"
   },
