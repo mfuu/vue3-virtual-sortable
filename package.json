@@ -1,6 +1,6 @@
 {
   "name": "vue-virtual-sortable",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "A virtual scrolling list component that can be sorted by dragging, support vue3",
   "main": "dist/virtual-list.min.js",
   "types": "types/index.d.ts",
@@ -9,8 +9,8 @@
     "types"
   ],
   "scripts": {
-    "lint": "eslint --fix src --ext .js",
     "build": "cross-env mode=production rollup -c rollup.config.js",
+    "publish": "npm publish --tag=next",
     "core:update": "git submodule update --remote",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
