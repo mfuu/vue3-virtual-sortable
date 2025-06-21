@@ -257,10 +257,9 @@ const VirtualList = defineComponent({
       }
 
       const sizes = virtual.sizes.size;
-      const renders = Math.min(props.keeps, list.value.length);
       virtual.onItemResized(key, size);
 
-      if (sizes === renders - 1) {
+      if (sizes === props.keeps - 1 && list.value.length > props.keeps) {
         virtual.updateRange(range.value);
       }
     };
