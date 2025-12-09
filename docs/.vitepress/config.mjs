@@ -37,8 +37,8 @@ export default defineConfig({
         base: '/guide/',
         items: [
           { text: 'Start', link: 'install' },
-          { text: 'Emits', link: 'emits' },
           { text: 'Props', link: 'props' },
+          { text: 'Emits', link: 'emits' },
           { text: 'Methods', link: 'methods' },
         ],
       },

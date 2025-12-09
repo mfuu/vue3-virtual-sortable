@@ -3,6 +3,8 @@
 dev
 issues
 coverage
+/dist
+/types
 
 # dependencies
 node_modules
@@ -19,3 +21,7 @@ yarn.lock
 # vitepress
 cache
 docs/*/dist
+
+# System files
+.DS_Store
+Thumbs.db

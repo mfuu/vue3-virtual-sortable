@@ -1,0 +1,37 @@
+name: npm publish
+
+on:
+  release:
+    types: [published]
+permissions:
+  id-token: write # Required for OIDC
+  contents: read
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+
+      # Ensure npm 11.5.1 or later is installed
+      - name: Install npm latest
+        run: npm install -g npm@latest
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install submodules
+        run: git submodule update --init --recursive
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish to npm
+        run: npm publish --tag=next
