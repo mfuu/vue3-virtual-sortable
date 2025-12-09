@@ -1,10 +1,15 @@
+import { Direction } from 'sortable-dnd';
 import { PropType } from 'vue';
 
-type Direction = 'vertical' | 'horizontal';
-type LockAxis = 'x' | 'y';
+export type LockAxis = 'x' | 'y';
+export type KeyValueType = string | number;
 
 export const VirtualProps = {
-  modelValue: {},
+  modelValue: {
+    type: Array as PropType<any[]>,
+    default: () => [],
+    required: true,
+  },
   dataKey: {
     type: String,
     default: '',
@@ -82,7 +87,7 @@ export const VirtualProps = {
     type: Boolean,
     default: false,
   },
-  fallbackOnBody: {
+  appendToBody: {
     type: Boolean,
     default: false,
   },
@@ -93,6 +98,10 @@ export const VirtualProps = {
   delayOnTouchOnly: {
     type: Boolean,
     default: false,
+  },
+  dropOnAnimationEnd: {
+    type: Boolean,
+    default: true,
   },
   rootTag: {
     type: String,
@@ -133,8 +142,8 @@ export const ItemProps = {
     type: [String, Number],
     default: undefined,
   },
-  sizeKey: {
-    type: String,
-    default: 'offsetHeight',
+  horizontal: {
+    type: Boolean,
+    default: false,
   },
 };

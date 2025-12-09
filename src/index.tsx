@@ -1,6 +1,7 @@
 import {
   h,
   ref,
+  Ref,
   isRef,
   watch,
   computed,
@@ -11,26 +12,25 @@ import {
   onBeforeMount,
   defineComponent,
 } from 'vue';
-import { SortableEvent } from 'sortable-dnd';
 import {
-  Range,
-  Virtual,
-  Sortable,
-  throttle,
-  DropEvent,
-  DragEvent,
   getDataKey,
-  ScrollEvent,
-  VirtualAttrs,
+  isEqual,
+  throttle,
   SortableAttrs,
-  VirtualOptions,
-  SortableOptions,
-  isSameValue,
+  VirtualAttrs,
+  VirtualSortable,
+  type DragEvent,
+  type DropEvent,
+  type Options,
+  type Range,
+  type ScrollEvent,
 } from './core';
-import { VirtualProps } from './props';
+import { KeyValueType, VirtualProps } from './props';
 import Item from './item';
 
-const getList = (source) => {
+let draggingItem: any;
+
+const getList = (source: Ref<any[]> | any[]) => {
   return isRef(source) ? source.value : source;
 };
 
@@ -38,42 +38,43 @@ const VirtualList = defineComponent({
   props: VirtualProps,
   emits: ['update:modelValue', 'top', 'bottom', 'drag', 'drop', 'rangeChange'],
   setup(props, { emit, slots, expose }) {
-    const list = ref([]);
+    const list = ref<any[]>([]);
     const range = ref<Range>({ start: 0, end: props.keeps - 1, front: 0, behind: 0 });
+    const dragging = ref<KeyValueType>('');
     const horizontal = computed(() => props.direction !== 'vertical');
 
-    const rootRef = ref<HTMLElement>();
-    const wrapRef = ref<HTMLElement>();
+    const rootElRef = ref<HTMLElement>();
+    const wrapElRef = ref<HTMLElement>();
 
-    function getSize(key: string | number) {
-      return virtual.getSize(key);
+    function getSize(key: KeyValueType) {
+      return VS.call('getSize', key);
     }
 
     function getOffset() {
-      return virtual.getOffset();
+      return VS.call('getOffset');
     }
 
     function getClientSize() {
-      return virtual.getClientSize();
+      return VS.call('getClientSize');
     }
 
     function getScrollSize() {
-      return virtual.getScrollSize();
+      return VS.call('getScrollSize');
     }
 
-    function scrollToKey(key: string | number) {
+    function scrollToKey(key: KeyValueType, align?: 'top' | 'bottom' | 'auto') {
       const index = uniqueKeys.indexOf(key);
       if (index > -1) {
-        virtual.scrollToIndex(index);
+        VS.call('scrollToIndex', index, align);
       }
     }
 
     function scrollToOffset(offset: number) {
-      virtual.scrollToOffset(offset);
+      VS.call('scrollToOffset', offset);
     }
 
-    function scrollToIndex(index: number) {
-      virtual.scrollToIndex(index);
+    function scrollToIndex(index: number, align?: 'top' | 'bottom' | 'auto') {
+      VS.call('scrollToIndex', index, align);
     }
 
     function scrollToTop() {
@@ -81,7 +82,7 @@ const VirtualList = defineComponent({
     }
 
     function scrollToBottom() {
-      virtual.scrollToBottom();
+      VS.call('scrollToBottom');
     }
 
     expose({
@@ -113,106 +114,98 @@ const VirtualList = defineComponent({
 
     // set back offset when awake from keep-alive
     onActivated(() => {
-      virtual && scrollToOffset(virtual.offset);
+      scrollToOffset(VS.virtual.offset);
 
-      virtual.addScrollEventListener();
+      VS.call('addScrollEventListener');
     });
 
     onDeactivated(() => {
-      virtual.removeScrollEventListener();
+      VS.call('removeScrollEventListener');
     });
 
     onMounted(() => {
-      installVirtual();
-      installSortable();
+      initVirtualSortable();
     });
 
     onUnmounted(() => {
-      sortable?.destroy();
-      virtual?.removeScrollEventListener();
+      VS.destroy();
     });
 
-    let lastList: any[] = [];
-    let uniqueKeys: (string | number)[] = [];
-    let topLoadLength: number = 0;
+    let uniqueKeys: KeyValueType[] = [];
+    let lastListLength: number = 0;
+    let listLengthWhenTopLoading: number = 0;
     const onModelUpdate = () => {
       const data = getList(props.modelValue);
       if (!data) return;
 
       list.value = data;
       updateUniqueKeys();
-      updateRange(lastList, data);
-
-      sortable?.option('list', data);
+      detectRangeChange(lastListLength, data.length);
 
       // if auto scroll to the last offset
-      if (topLoadLength && props.keepOffset) {
-        const index = data.length - topLoadLength;
+      if (listLengthWhenTopLoading && props.keepOffset) {
+        const index = data.length - listLengthWhenTopLoading;
         if (index > 0) {
           scrollToIndex(index);
         }
-        topLoadLength = 0;
+        listLengthWhenTopLoading = 0;
       }
 
-      lastList = [...list.value];
+      lastListLength = data.length;
     };
 
     const updateUniqueKeys = () => {
       uniqueKeys = list.value.map((item) => getDataKey(item, props.dataKey));
-      virtual?.option('uniqueKeys', uniqueKeys);
-      sortable?.option('uniqueKeys', uniqueKeys);
+      VS?.option('uniqueKeys', uniqueKeys);
     };
 
-    const updateRange = (oldList, newList) => {
-      if (!oldList.length && !newList.length) {
+    const detectRangeChange = (oldListLength: number, newListLength: number) => {
+      if (!oldListLength && !newListLength) {
         return;
       }
 
-      if (oldList.length === newList.length) {
+      if (oldListLength === newListLength) {
         return;
       }
 
       let newRange = { ...range.value };
       if (
-        oldList.length > props.keeps &&
-        newList.length > oldList.length &&
-        newRange.end === oldList.length - 1 &&
-        scrolledToBottom()
+        oldListLength > props.keeps &&
+        newListLength > oldListLength &&
+        newRange.end === oldListLength - 1 &&
+        VS?.call('isReachedBottom')
       ) {
         newRange.start++;
       }
-      virtual?.updateRange(newRange);
+
+      VS?.call('updateRange', newRange);
     };
 
-    const scrolledToBottom = () => {
-      const offset = getOffset();
-      const clientSize = getClientSize();
-      const scrollSize = getScrollSize();
-      return offset + clientSize + 1 >= scrollSize;
-    };
+    // ========================================== virtual sortable ==========================================
+    let VS: VirtualSortable<KeyValueType>;
 
-    // ========================================== use virtual ==========================================
-    let virtual: Virtual;
-    const dragging = ref<boolean>(false);
-    const chosenKey = ref<string>('');
-    const virtualAttributes = computed(() => {
-      return VirtualAttrs.reduce((res, key) => {
+    const vsAttributes = computed(() => {
+      return [...VirtualAttrs, ...SortableAttrs].reduce((res, key) => {
         res[key] = props[key];
         return res;
       }, {});
     });
 
-    watch(virtualAttributes, (newVal, oldVal) => {
-      if (!virtual) return;
-      for (let key in newVal) {
-        if (newVal[key] !== oldVal[key]) {
-          virtual.option(key as keyof VirtualOptions, newVal[key]);
+    watch(
+      () => [vsAttributes],
+      (newVal, oldVal) => {
+        if (!VS) return;
+
+        for (let key in newVal) {
+          if (newVal[key] !== oldVal[key]) {
+            VS.option(key as keyof Options<KeyValueType>, newVal[key]);
+          }
         }
       }
-    });
+    );
 
     const handleToTop = throttle(() => {
-      topLoadLength = list.value.length;
+      listLengthWhenTopLoading = list.value.length;
       emit('top');
     }, 50);
 
@@ -221,7 +214,7 @@ const VirtualList = defineComponent({
     }, 50);
 
     const onScroll = (event: ScrollEvent) => {
-      topLoadLength = 0;
+      listLengthWhenTopLoading = 0;
       if (!!list.value.length && event.top) {
         handleToTop();
       } else if (event.bottom) {
@@ -229,104 +222,87 @@ const VirtualList = defineComponent({
       }
     };
 
-    const onUpdate = (newRange: Range) => {
-      const rangeChanged = newRange.start !== range.value.start;
-      if (dragging.value && rangeChanged && sortable) {
-        sortable.rangeChanged = true;
-      }
+    const onUpdate = (newRange: Range, changed: boolean) => {
       range.value = newRange;
-      rangeChanged && emit('rangeChange', newRange);
+
+      changed && emit('rangeChange', newRange);
     };
 
-    const installVirtual = () => {
-      virtual = new Virtual({
-        ...virtualAttributes.value,
+    const onItemResized = (size: number, key: KeyValueType) => {
+      // ignore changes for dragging element
+      if (isEqual(key, dragging.value) || !VS) {
+        return;
+      }
+
+      const sizes = VS.virtual.sizes.size;
+      VS.call('updateItemSize', key, size);
+
+      if (sizes === props.keeps - 1 && list.value.length > props.keeps) {
+        VS.call('updateRange', range.value);
+      }
+    };
+
+    const onDrag = (event: DragEvent<KeyValueType>) => {
+      const { key, index } = event;
+      const item = list.value[index];
+
+      draggingItem = item;
+      dragging.value = key;
+
+      if (!props.sortable) {
+        VS.call('enableScroll', false);
+        VS.option('autoScroll', false);
+      }
+
+      emit('drag', { ...event, item });
+    };
+
+    const onDrop = (event: DropEvent<KeyValueType>) => {
+      const item = draggingItem;
+      const { oldIndex, newIndex } = event;
+
+      const oldList = [...list.value];
+      const newList = [...list.value];
+
+      if (oldIndex === -1) {
+        newList.splice(newIndex, 0, item);
+      } else if (newIndex === -1) {
+        newList.splice(oldIndex, 1);
+      } else {
+        newList.splice(oldIndex, 1);
+        newList.splice(newIndex, 0, item);
+      }
+
+      VS.call('enableScroll', true);
+      VS.option('autoScroll', props.autoScroll);
+
+      dragging.value = '';
+
+      if (event.changed) {
+        emit('update:modelValue', newList);
+      }
+      emit('drop', { ...event, item, list: newList, oldList });
+    };
+
+    const initVirtualSortable = () => {
+      VS = new VirtualSortable(rootElRef.value!, {
+        ...vsAttributes.value,
         buffer: Math.round(props.keeps / 3),
-        wrapper: wrapRef.value!,
-        scroller: props.scroller || rootRef.value,
+        wrapper: wrapElRef.value!,
+        scroller: props.scroller || rootElRef.value!,
         uniqueKeys: uniqueKeys,
+        ghostContainer: wrapElRef.value,
+        onDrag,
+        onDrop,
         onScroll,
         onUpdate,
       });
     };
 
-    const onItemResized = (size: number, key: string | number) => {
-      // ignore changes for dragging element
-      if (isSameValue(key, chosenKey.value)) {
-        return;
-      }
-
-      const sizes = virtual.sizes.size;
-      virtual.onItemResized(key, size);
-
-      if (sizes === props.keeps - 1 && list.value.length > props.keeps) {
-        virtual.updateRange(range.value);
-      }
-    };
-
-    // ========================================== use sortable ==========================================
-    let sortable: Sortable<any>;
-    const sortableAttributes = computed(() => {
-      return SortableAttrs.reduce((res, key) => {
-        res[key] = props[key];
-        return res;
-      }, {});
-    });
-
-    watch(sortableAttributes, (newVal, oldVal) => {
-      if (!sortable) return;
-      for (let key in newVal) {
-        if (newVal[key] !== oldVal[key]) {
-          sortable.option(key as keyof SortableOptions<any>, newVal[key]);
-        }
-      }
-    });
-
-    const onChoose = (event: SortableEvent) => {
-      chosenKey.value = event.node.getAttribute('data-key') as string;
-    };
-
-    const onUnchoose = () => {
-      chosenKey.value = '';
-    };
-
-    const onDrag = (event: DragEvent<any>) => {
-      dragging.value = true;
-      if (!props.sortable) {
-        virtual.enableScroll(false);
-        sortable.option('autoScroll', false);
-      }
-      emit('drag', event);
-    };
-
-    const onDrop = (event: DropEvent<any>) => {
-      dragging.value = false;
-
-      virtual.enableScroll(true);
-      sortable.option('autoScroll', props.autoScroll);
-
-      if (event.changed) {
-        emit('update:modelValue', event.list);
-      }
-      emit('drop', event);
-    };
-
-    const installSortable = () => {
-      sortable = new Sortable(rootRef.value!, {
-        ...sortableAttributes.value,
-        list: list.value,
-        uniqueKeys: uniqueKeys,
-        onDrag,
-        onDrop,
-        onChoose,
-        onUnchoose,
-      });
-    };
-
     // ========================================== layout ==========================================
-    const renderSpacer = (offset) => {
-      const offsetKey = horizontal.value ? 'width' : 'height';
+    const renderSpacer = (offset: number) => {
       if (props.tableMode) {
+        const offsetKey = horizontal.value ? 'width' : 'height';
         const tdStyle = { padding: 0, border: 0, [offsetKey]: `${offset}px` };
 
         return h('tr', {}, [h('td', { style: tdStyle })]);
@@ -338,7 +314,6 @@ const VirtualList = defineComponent({
     const renderItems = () => {
       const renders: any[] = [];
       const { start, end, front, behind } = range.value;
-      const sizeKey = horizontal.value ? 'offsetWidth' : 'offsetHeight';
 
       renders.push(renderSpacer(front));
 
@@ -346,16 +321,17 @@ const VirtualList = defineComponent({
         const record = list.value[index];
         if (record) {
           const dataKey = getDataKey(record, props.dataKey);
-          const isChosen = isSameValue(dataKey, chosenKey.value);
+          const isDragging = isEqual(dataKey, dragging.value);
+
           renders.push(
             slots.item
               ? h(
                   Item,
                   {
                     key: dataKey,
-                    style: dragging.value && isChosen && { display: 'none' },
+                    style: isDragging && { display: 'none' },
                     dataKey: dataKey,
-                    sizeKey: sizeKey,
+                    horizontal: horizontal.value,
                     onResize: onItemResized,
                   },
                   {
@@ -379,22 +355,22 @@ const VirtualList = defineComponent({
       const overflow = horizontal.value ? 'auto hidden' : 'hidden auto';
       const padding = horizontal.value ? `0 ${behind}px 0 ${front}px` : `${front}px 0 ${behind}px`;
 
-      const containerTag = tableMode ? 'table' : rootTag;
-      const wrapperTag = tableMode ? 'tbody' : wrapTag;
+      const rootElTag = tableMode ? 'table' : rootTag;
+      const wrapElTag = tableMode ? 'tbody' : wrapTag;
 
       return h(
-        containerTag,
+        rootElTag,
         {
-          ref: rootRef,
+          ref: rootElRef,
           style: !scroller && !tableMode && { overflow },
         },
         {
           default: () => [
             slots.header?.(),
             h(
-              wrapperTag,
+              wrapElTag,
               {
-                ref: wrapRef,
+                ref: wrapElRef,
                 class: wrapClass,
                 style: { ...wrapStyle, padding: !tableMode && padding },
               },

@@ -2,9 +2,9 @@
 
 ## `v-model`
 
-| **Type**        | **Default** | **Required** |
-| --------------- | ----------- | ------------ |
-| `Array  \| Ref` | `[]`        | `true`       |
+| **Type** | **Default** | **Required** |
+| -------- | ----------- | ------------ |
+| `Array`  | `[]`        | `true`       |
 
 The data that needs to be rendered
 
@@ -50,9 +50,9 @@ Drag handle selector within list items
 string: 'name'
 object: {
   name: 'group',
-  put: true/false,
-  pull: true/false/'clone',
-  revertDrag: true/false
+  put: true | false,
+  pull: true | false | 'clone',
+  revertDrag: true | false
 }
 ```
 
@@ -154,12 +154,11 @@ Automatic scrolling when moving to the edge of the container
 
 ## `scrollSpeed`
 
-| **Type**  | **Default**             |
-| --------- | ----------------------- |
-| `Object`  | `{ x: 10, y: 10 }`      |
+| **Type** | **Default**        |
+| -------- | ------------------ |
+| `Object` | `{ x: 10, y: 10 }` |
 
 Vertical&Horizontal scrolling speed (px)
-
 
 ## `scrollThreshold`
 
@@ -185,13 +184,21 @@ Time in milliseconds to define when the sorting should start
 
 Only delay on press if user is using touch
 
-## `fallbackOnBody`
+## `appendToBody`
 
 | **Type**  | **Default** |
 | --------- | ----------- |
 | `Boolean` | `false`     |
 
 Appends the ghost element into the document's body
+
+## `dropOnAnimationEnd`
+
+| **Type**  | **Default** |
+| --------- | ----------- |
+| `Boolean` | `true`      |
+
+Whether to trigger the drop event when the animation ends
 
 ## `rootTag`
 

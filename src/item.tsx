@@ -28,7 +28,8 @@ const Item = defineComponent({
     let observer: ResizeObserver | null = null;
 
     const onSizeChange = (el: HTMLElement) => {
-      const size = el ? el[props.sizeKey] : 0;
+      const sizeKey = props.horizontal ? 'offsetWidth' : 'offsetHeight';
+      const size = el ? el[sizeKey] : 0;
       emit('resize', size, props.dataKey);
     };
 
