@@ -1,0 +1,1 @@
+import{_ as s,c as i,o as a,ac as n}from"./chunks/framework.CoCT1vi4.js";const y=JSON.parse('{"title":"Emits","description":"","frontmatter":{},"headers":[],"relativePath":"guide/emits.md","filePath":"guide/emits.md"}'),e={name:"guide/emits.md"},t=n("",14),l=[t];function h(p,k,d,r,o,c){return a(),i("div",null,l)}const B=s(e,[["render",h]]);export{y as __pageData,B as default};
