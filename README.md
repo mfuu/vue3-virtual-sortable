@@ -99,27 +99,28 @@ const list = ref([
 
 **Uncommonly used**
 
-| **Prop**             | **Type**  | **Default**        | **Description**                                               |
-| -------------------- | --------- | ------------------ | ------------------------------------------------------------- |
-| `disabled`           | `Boolean` | `false`            | Disables the sortable if set to true                          |
-| `sortable`           | `Boolean` | `true`             | Whether the current list can be sorted by dragging            |
-| `draggable`          | `String`  | `[role="item"]`    | Specifies which items inside the element should be draggable. |
-| `animation`          | `Number`  | `150`              | Animation speed moving items when sorting                     |
-| `autoScroll`         | `Boolean` | `true`             | Automatic scrolling when moving to the edge of the container  |
-| `scrollSpeed`        | `Object`  | `{ x: 10, y: 10 }` | Vertical&Horizontal scrolling speed (px)                      |
-| `scrollThreshold`    | `Number`  | `55`               | Threshold to trigger autoscroll                               |
-| `delay`              | `Number`  | `0`                | Time in milliseconds to define when the sorting should start  |
-| `delayOnTouchOnly`   | `Boolean` | `false`            | Only delay on press if user is using touch                    |
-| `appendToBody`       | `Boolean` | `false`            | Appends the ghost element into the document's body            |
-| `dropOnAnimationEnd` | `Boolean` | `true`             | Whether to trigger the drop event when the animation ends     |
-| `rootTag`            | `String`  | `div`              | Label type for root element                                   |
-| `wrapTag`            | `String`  | `div`              | Label type for list wrap element                              |
-| `wrapClass`          | `String`  | `''`               | Class name for list wrap element                              |
-| `wrapStyle`          | `Object`  | `{}`               | Style object for list wrap element                            |
-| `ghostClass`         | `String`  | `''`               | Class name for the mask element when dragging                 |
-| `ghostStyle`         | `Object`  | `{}`               | Style object for the mask element when dragging               |
-| `chosenClass`        | `String`  | `''`               | Class name for the chosen item                                |
-| `placeholderClass`   | `String`  | `''`               | Class name for the drop placeholder                           |
+| **Prop**             | **Type**  | **Default**             | **Description**                                               |
+| -------------------- | --------- | ----------------------- | ------------------------------------------------------------- |
+| `buffer`             | `Number`  | `Math.round(keeps / 3)` | Buffer size to detect range change                            |
+| `disabled`           | `Boolean` | `false`                 | Disables the sortable if set to true                          |
+| `sortable`           | `Boolean` | `true`                  | Whether the current list can be sorted by dragging            |
+| `draggable`          | `String`  | `[role="item"]`         | Specifies which items inside the element should be draggable. |
+| `animation`          | `Number`  | `150`                   | Animation speed moving items when sorting                     |
+| `autoScroll`         | `Boolean` | `true`                  | Automatic scrolling when moving to the edge of the container  |
+| `scrollSpeed`        | `Object`  | `{ x: 10, y: 10 }`      | Vertical&Horizontal scrolling speed (px)                      |
+| `scrollThreshold`    | `Number`  | `55`                    | Threshold to trigger autoscroll                               |
+| `delay`              | `Number`  | `0`                     | Time in milliseconds to define when the sorting should start  |
+| `delayOnTouchOnly`   | `Boolean` | `false`                 | Only delay on press if user is using touch                    |
+| `appendToBody`       | `Boolean` | `false`                 | Appends the ghost element into the document's body            |
+| `dropOnAnimationEnd` | `Boolean` | `true`                  | Whether to trigger the drop event when the animation ends     |
+| `rootTag`            | `String`  | `div`                   | Label type for root element                                   |
+| `wrapTag`            | `String`  | `div`                   | Label type for list wrap element                              |
+| `wrapClass`          | `String`  | `''`                    | Class name for list wrap element                              |
+| `wrapStyle`          | `Object`  | `{}`                    | Style object for list wrap element                            |
+| `ghostClass`         | `String`  | `''`                    | Class name for the mask element when dragging                 |
+| `ghostStyle`         | `Object`  | `{}`                    | Style object for the mask element when dragging               |
+| `chosenClass`        | `String`  | `''`                    | Class name for the chosen item                                |
+| `placeholderClass`   | `String`  | `''`                    | Class name for the drop placeholder                           |
 
 ## Methods
 

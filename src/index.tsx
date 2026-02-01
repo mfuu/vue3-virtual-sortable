@@ -188,7 +188,7 @@ const VirtualList = defineComponent({
       return [...VirtualAttrs, ...SortableAttrs].reduce((res, key) => {
         res[key] = props[key];
         return res;
-      }, {});
+      }, {} as Options<KeyValueType>);
     });
 
     watch(
@@ -198,7 +198,7 @@ const VirtualList = defineComponent({
 
         for (let key in newVal) {
           if (newVal[key] !== oldVal[key]) {
-            VS.option(key as keyof Options<KeyValueType>, newVal[key]);
+            VS.option(key as any, newVal[key]);
           }
         }
       }
@@ -287,7 +287,6 @@ const VirtualList = defineComponent({
     const initVirtualSortable = () => {
       VS = new VirtualSortable(rootElRef.value!, {
         ...vsAttributes.value,
-        buffer: Math.round(props.keeps / 3),
         wrapper: wrapElRef.value!,
         scroller: props.scroller || rootElRef.value!,
         uniqueKeys: uniqueKeys,

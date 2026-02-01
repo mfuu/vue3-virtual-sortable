@@ -32,6 +32,16 @@ The number of lines rendered by the virtual scroll
 
 The estimated height of each piece of data, you can choose to pass it or not, it will be automatically calculated
 
+## `buffer`
+
+| **Type** | **Default**             |
+| -------- | ----------------------- |
+| `Number` | `Math.round(keeps / 3)` |
+
+Buffer size to detect range change
+
+> If a rendering anomaly occurs, for example: [this issue](https://github.com/mfuu/vue3-virtual-sortable/issues/29), you can reduce the value or set it to 0.
+
 ## `handle`
 
 | **Type** | **Default** |

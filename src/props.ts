@@ -55,6 +55,9 @@ export const VirtualProps = {
     type: Number,
     default: undefined,
   },
+  buffer: {
+    type: Number,
+  },
   debounceTime: {
     type: Number,
     default: 0,
