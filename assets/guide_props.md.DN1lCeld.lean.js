@@ -1,1 +1,0 @@
-import{_ as t,c as e,o as a,ac as o}from"./chunks/framework.CoCT1vi4.js";const y=JSON.parse('{"title":"Props","description":"","frontmatter":{},"headers":[],"relativePath":"guide/props.md","filePath":"guide/props.md"}'),d={name:"guide/props.md"},r=o("",97),s=[r];function h(l,n,i,c,p,b){return a(),e("div",null,s)}const u=t(d,[["render",h]]);export{y as __pageData,u as default};
