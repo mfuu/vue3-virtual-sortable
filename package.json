@@ -2,7 +2,8 @@
   "name": "vue-virtual-sortable",
   "version": "3.1.2",
   "description": "A virtual scrolling list component that can be sorted by dragging, support vue3",
-  "main": "dist/virtual-list.min.js",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
   "types": "types/index.d.ts",
   "files": [
     "dist",
@@ -23,6 +24,8 @@
   "keywords": [
     "vue",
     "vue3",
+    "scroll",
+    "list",
     "sort",
     "drag",
     "drop",
@@ -30,6 +33,7 @@
     "sortable",
     "virtual",
     "virtual-list",
+    "virtual-scroll",
     "big-data",
     "big-list",
     "infinite"
