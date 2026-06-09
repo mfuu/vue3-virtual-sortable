@@ -25,7 +25,7 @@ import {
   type Range,
   type ScrollEvent,
 } from './core';
-import { KeyValueType, VirtualProps } from './props';
+import { KeyValueType, VirtualListProps } from './props';
 import Item from './item';
 
 let draggingItem: any;
@@ -35,8 +35,8 @@ const getList = (source: Ref<any[]> | any[]) => {
 };
 
 const VirtualList = defineComponent({
-  props: VirtualProps,
-  emits: ['update:modelValue', 'top', 'bottom', 'drag', 'drop', 'rangeChange'],
+  props: VirtualListProps,
+  emits: ['update:modelValue', 'top', 'bottom', 'scroll', 'drag', 'drop', 'rangeChange'],
   setup(props, { emit, slots, expose }) {
     const list = ref<any[]>([]);
     const range = ref<Range>({ start: 0, end: props.keeps - 1, front: 0, behind: 0 });
@@ -214,6 +214,8 @@ const VirtualList = defineComponent({
     }, 50);
 
     const onScroll = (event: ScrollEvent) => {
+      emit('scroll', event);
+
       listLengthWhenTopLoading = 0;
       if (!!list.value.length && event.top) {
         handleToTop();

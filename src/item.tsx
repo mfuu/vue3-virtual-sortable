@@ -1,5 +1,5 @@
 import { h, defineComponent } from 'vue';
-import { ItemProps } from './props';
+import { ListItemProps } from './props';
 
 type CallFun = (vnodeEl: HTMLElement) => void;
 type Funs = Record<'mounted' | 'updated' | 'unmounted', CallFun>;
@@ -22,7 +22,7 @@ const createSlot = ({ mounted, updated, unmounted }: Funs) => {
 };
 
 const Item = defineComponent({
-  props: ItemProps,
+  props: ListItemProps,
   emits: ['resize'],
   setup(props, { emit, slots }) {
     let observer: ResizeObserver | null = null;

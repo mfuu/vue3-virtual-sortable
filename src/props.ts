@@ -4,7 +4,7 @@ import { PropType } from 'vue';
 export type LockAxis = 'x' | 'y';
 export type KeyValueType = string | number;
 
-export const VirtualProps = {
+export const VirtualListProps = {
   modelValue: {
     type: Array as PropType<any[]>,
     default: () => [],
@@ -140,7 +140,7 @@ export const VirtualProps = {
   },
 };
 
-export const ItemProps = {
+export const ListItemProps = {
   dataKey: {
     type: [String, Number],
     default: undefined,

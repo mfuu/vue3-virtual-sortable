@@ -8,6 +8,19 @@ scrolled to the top of list
 
 scrolled to the bottom of list
 
+## `scroll`
+
+scroll event
+
+```ts
+const {
+  top,
+  bottom,
+  offset,
+  direction,
+} = scrollEvent
+```
+
 ## `drag`
 
 drag is started
