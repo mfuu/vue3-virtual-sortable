@@ -26,7 +26,7 @@ Scroll to bottom of list
 
 ## `scrollToKey(key: string, align: 'top' | 'bottom' | 'auto')`
 
-Scroll to the specified `data-key` position
+Scroll to the specified `dataKey` position
 
 ## `scrollToIndex(index: number, align: 'top' | 'bottom' | 'auto')`
 

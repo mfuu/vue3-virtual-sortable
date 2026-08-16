@@ -2,7 +2,8 @@ import { Direction } from 'sortable-dnd';
 import { PropType } from 'vue';
 
 export type LockAxis = 'x' | 'y';
-export type KeyValueType = string | number;
+
+export type KeyValueType = any;
 
 export const VirtualListProps = {
   modelValue: {
@@ -11,7 +12,7 @@ export const VirtualListProps = {
     required: true,
   },
   dataKey: {
-    type: String,
+    type: [Function, String],
     default: '',
     required: true,
   },
@@ -141,8 +142,8 @@ export const VirtualListProps = {
 };
 
 export const ListItemProps = {
-  dataKey: {
-    type: [String, Number],
+  itemKey: {
+    type: String as PropType<KeyValueType>,
     default: undefined,
   },
   horizontal: {

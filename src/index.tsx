@@ -1,3 +1,4 @@
+import Sortable from 'sortable-dnd';
 import {
   h,
   ref,
@@ -13,22 +14,20 @@ import {
   defineComponent,
 } from 'vue';
 import {
+  CoreService,
   getDataKey,
   isEqual,
   throttle,
   SortableAttrs,
   VirtualAttrs,
-  VirtualSortable,
+  type CoreOptions,
   type DragEvent,
   type DropEvent,
-  type Options,
   type Range,
   type ScrollEvent,
 } from './core';
 import { KeyValueType, VirtualListProps } from './props';
 import Item from './item';
-
-let draggingItem: any;
 
 const getList = (source: Ref<any[]> | any[]) => {
   return isRef(source) ? source.value : source;
@@ -47,34 +46,34 @@ const VirtualList = defineComponent({
     const wrapElRef = ref<HTMLElement>();
 
     function getSize(key: KeyValueType) {
-      return VS.call('getSize', key);
+      return core.virtual.getSize(key);
     }
 
     function getOffset() {
-      return VS.call('getOffset');
+      return core.virtual.getOffset();
     }
 
     function getClientSize() {
-      return VS.call('getClientSize');
+      return core.virtual.getClientSize();
     }
 
     function getScrollSize() {
-      return VS.call('getScrollSize');
+      return core.virtual.getScrollSize();
     }
 
     function scrollToKey(key: KeyValueType, align?: 'top' | 'bottom' | 'auto') {
       const index = uniqueKeys.indexOf(key);
       if (index > -1) {
-        VS.call('scrollToIndex', index, align);
+        core.virtual.scrollToIndex(index, align);
       }
     }
 
     function scrollToOffset(offset: number) {
-      VS.call('scrollToOffset', offset);
+      core.virtual.scrollToOffset(offset);
     }
 
     function scrollToIndex(index: number, align?: 'top' | 'bottom' | 'auto') {
-      VS.call('scrollToIndex', index, align);
+      core.virtual.scrollToIndex(index, align);
     }
 
     function scrollToTop() {
@@ -82,7 +81,7 @@ const VirtualList = defineComponent({
     }
 
     function scrollToBottom() {
-      VS.call('scrollToBottom');
+      core.virtual.scrollToBottom();
     }
 
     expose({
@@ -114,21 +113,21 @@ const VirtualList = defineComponent({
 
     // set back offset when awake from keep-alive
     onActivated(() => {
-      scrollToOffset(VS.virtual.offset);
+      scrollToOffset(core.virtual.offset);
 
-      VS.call('addScrollEventListener');
+      core.virtual.addScrollEventListener();
     });
 
     onDeactivated(() => {
-      VS.call('removeScrollEventListener');
+      core.virtual.removeScrollEventListener();
     });
 
     onMounted(() => {
-      initVirtualSortable();
+      initCoreService();
     });
 
     onUnmounted(() => {
-      VS.destroy();
+      core.destroy();
     });
 
     let uniqueKeys: KeyValueType[] = [];
@@ -154,9 +153,24 @@ const VirtualList = defineComponent({
       lastListLength = data.length;
     };
 
+    const getItemKey = (item: any) => {
+      if (typeof props.dataKey === 'function') {
+        return props.dataKey(item);
+      }
+
+      return getDataKey(item, props.dataKey);
+    };
+
     const updateUniqueKeys = () => {
-      uniqueKeys = list.value.map((item) => getDataKey(item, props.dataKey));
-      VS?.option('uniqueKeys', uniqueKeys);
+      const len = list.value.length;
+      const keys = new Array(len);
+
+      for (let i = 0; i < len; i++) {
+        keys[i] = getItemKey(list.value[i]);
+      }
+
+      uniqueKeys = keys;
+      core?.option('uniqueKeys', uniqueKeys);
     };
 
     const detectRangeChange = (oldListLength: number, newListLength: number) => {
@@ -173,32 +187,32 @@ const VirtualList = defineComponent({
         oldListLength > props.keeps &&
         newListLength > oldListLength &&
         newRange.end === oldListLength - 1 &&
-        VS?.call('isReachedBottom')
+        core?.virtual.isReachedBottom()
       ) {
         newRange.start++;
       }
 
-      VS?.call('updateRange', newRange);
+      core?.virtual.updateRange(newRange);
     };
 
     // ========================================== virtual sortable ==========================================
-    let VS: VirtualSortable<KeyValueType>;
+    let core: CoreService<KeyValueType>;
 
-    const vsAttributes = computed(() => {
+    const coreAttributes = computed(() => {
       return [...VirtualAttrs, ...SortableAttrs].reduce((res, key) => {
         res[key] = props[key];
         return res;
-      }, {} as Options<KeyValueType>);
+      }, {} as CoreOptions<KeyValueType>);
     });
 
     watch(
-      () => [vsAttributes],
+      () => [coreAttributes],
       (newVal, oldVal) => {
-        if (!VS) return;
+        if (!core) return;
 
         for (let key in newVal) {
           if (newVal[key] !== oldVal[key]) {
-            VS.option(key as any, newVal[key]);
+            core.option(key as any, newVal[key]);
           }
         }
       }
@@ -232,15 +246,15 @@ const VirtualList = defineComponent({
 
     const onItemResized = (size: number, key: KeyValueType) => {
       // ignore changes for dragging element
-      if (isEqual(key, dragging.value) || !VS) {
+      if (isEqual(key, dragging.value) || !core) {
         return;
       }
 
-      const sizes = VS.virtual.sizes.size;
-      VS.call('updateItemSize', key, size);
+      const sizes = core.virtual.sizes.size;
+      core.virtual.updateItemSize(key, size);
 
       if (sizes === props.keeps - 1 && list.value.length > props.keeps) {
-        VS.call('updateRange', range.value);
+        core.virtual.updateRange(range.value);
       }
     };
 
@@ -248,19 +262,14 @@ const VirtualList = defineComponent({
       const { key, index } = event;
       const item = list.value[index];
 
-      draggingItem = item;
+      Sortable.store.draggingItem = item;
       dragging.value = key;
-
-      if (!props.sortable) {
-        VS.call('enableScroll', false);
-        VS.option('autoScroll', false);
-      }
 
       emit('drag', { ...event, item });
     };
 
     const onDrop = (event: DropEvent<KeyValueType>) => {
-      const item = draggingItem;
+      const item = Sortable.store.draggingItem;
       const { oldIndex, newIndex } = event;
 
       const oldList = [...list.value];
@@ -275,9 +284,6 @@ const VirtualList = defineComponent({
         newList.splice(newIndex, 0, item);
       }
 
-      VS.call('enableScroll', true);
-      VS.option('autoScroll', props.autoScroll);
-
       dragging.value = '';
 
       if (event.changed) {
@@ -286,9 +292,9 @@ const VirtualList = defineComponent({
       emit('drop', { ...event, item, list: newList, oldList });
     };
 
-    const initVirtualSortable = () => {
-      VS = new VirtualSortable(rootElRef.value!, {
-        ...vsAttributes.value,
+    const initCoreService = () => {
+      core = new CoreService(rootElRef.value!, {
+        ...coreAttributes.value,
         wrapper: wrapElRef.value!,
         scroller: props.scroller || rootElRef.value!,
         uniqueKeys: uniqueKeys,
@@ -319,24 +325,24 @@ const VirtualList = defineComponent({
       renders.push(renderSpacer(front));
 
       for (let index = start; index <= end; index++) {
-        const record = list.value[index];
-        if (record) {
-          const dataKey = getDataKey(record, props.dataKey);
-          const isDragging = isEqual(dataKey, dragging.value);
+        const item = list.value[index];
+        if (item) {
+          const key = getItemKey(item);
+          const isDragging = isEqual(key, dragging.value);
 
           renders.push(
             slots.item
               ? h(
                   Item,
                   {
-                    key: dataKey,
+                    key: key,
                     style: isDragging && { display: 'none' },
-                    dataKey: dataKey,
+                    itemKey: key,
                     horizontal: horizontal.value,
                     onResize: onItemResized,
                   },
                   {
-                    default: () => slots.item?.({ record, index, dataKey }),
+                    default: () => slots.item?.({ item, index, key }),
                   }
                 )
               : null

@@ -16,14 +16,14 @@
         </tr>
       </thead>
     </template>
-    <template v-slot:item="{ record, index, dateKey }">
+    <template v-slot:item="{ item, index, key }">
       <tr>
         <td>
-          <span class="index">#{{ record.index }}</span>
+          <span class="index">#{{ item.index }}</span>
           <span class="handle">☰</span>
         </td>
-        <td>{{ record.name }}</td>
-        <td>{{ record.desc }}</td>
+        <td>{{ item.name }}</td>
+        <td>{{ item.desc }}</td>
       </tr>
     </template>
   </virtual-list>

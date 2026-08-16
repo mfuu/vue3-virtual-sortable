@@ -25,10 +25,10 @@ Root component:
       :handle="'#handle'" // use id
     -->
     <virtual-list v-model="list" dataKey="id" handle="#handle" style="height: 500px;">
-      <template v-slot:item="{ record, index, dataKey }">
+      <template v-slot:item="{ item, index, key }">
         <div>
           <i id="handle" class="handle">handle</i>
-          <p>{{ record.text }}</p>
+          <p>{{ item.text }}</p>
         </div>
       </template>
       <template v-slot:header>
@@ -75,10 +75,10 @@ const list = ref([
 
 ### Required props
 
-| **Prop**   | **Type** | **Description**                                                       |
-| ---------- | -------- | --------------------------------------------------------------------- |
-| `v-model`  | `Array`  | The data that needs to be rendered                                    |
-| `data-key` | `String` | The unique identifier of each piece of data, in the form of `'a.b.c'` |
+| **Prop**  | **Type**              | **Description**                             |
+| --------- | --------------------- | ------------------------------------------- |
+| `v-model` | `Array`               | The data that needs to be rendered          |
+| `dataKey` | `String` / `Function` | The unique identifier of each piece of data |
 
 ### Optional props
 
@@ -89,7 +89,7 @@ const list = ref([
 | `keeps`        | `Number`                  | `30`        | The number of lines rendered by the virtual scroll                              |
 | `size`         | `Number`                  | `-`         | The estimated height of each piece of data, it will be automatically calculated |
 | `handle`       | `Function/String`         | `-`         | Drag handle selector within list items                                          |
-| `group`        | `Object/String`           | `-`         | Set value to allow drag between different lists                                 |
+| `group`        | `Object/String`           | `-`         | Drag between groups with the same group name                                    |
 | `direction`    | `vertical \| horizontal`  | `vertical`  | Scroll direction                                                                |
 | `scroller`     | `Document \| HTMLElement` | `-`         | Virtual list scrolling element                                                  |
 | `lockAxis`     | `x \| y`                  | `-`         | Axis on which dragging will be locked                                           |

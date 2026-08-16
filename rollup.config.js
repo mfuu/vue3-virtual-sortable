@@ -30,7 +30,7 @@ export default [
         banner: banner.replace(/\n/, ''),
       },
     ],
-    external: ['vue'],
+    external: ['vue', 'sortable-dnd'],
     plugins: [resolve(), commonJs(), typescript(), babel({ extensions, babelHelpers: 'bundled' })],
   },
   {

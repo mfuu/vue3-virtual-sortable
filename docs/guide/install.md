@@ -22,7 +22,7 @@ $ yarn add vue-virtual-sortable@next
     v-model="list"
     data-key="id"
   >
-    <template v-slot:item="{ record, index, dataKey }">
+    <template v-slot:item="{ item, index, key }">
       <div>
         item slot content
       </div>

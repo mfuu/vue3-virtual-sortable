@@ -30,7 +30,7 @@ const Item = defineComponent({
     const onSizeChange = (el: HTMLElement) => {
       const sizeKey = props.horizontal ? 'offsetWidth' : 'offsetHeight';
       const size = el ? el[sizeKey] : 0;
-      emit('resize', size, props.dataKey);
+      emit('resize', size, props.itemKey);
     };
 
     const mounted = (el: HTMLElement) => {
@@ -56,15 +56,15 @@ const Item = defineComponent({
     const customSlot = createSlot({ mounted, updated, unmounted });
 
     return () => {
-      const { dataKey } = props;
+      const { itemKey } = props;
       const [defaultSlot] = slots.default?.() || [];
       return h(
         customSlot,
         {
-          key: dataKey,
+          key: itemKey,
           role: 'item',
           vnode: defaultSlot,
-          'data-key': dataKey,
+          'data-key': itemKey,
         },
         { default: () => slots.default?.() }
       );

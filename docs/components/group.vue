@@ -8,10 +8,10 @@
       chosen-class="chosen"
       class="virtual-list"
     >
-      <template v-slot:item="{ record, index, dateKey }">
+      <template v-slot:item="{ item, index, key }">
         <div class="list-item">
           <div class="item-title">
-            <span class="index">#  {{ record.index }}-{{ record.name }}</span>
+            <span class="index">#{{ item.index }}-{{ item.name }}</span>
             <span class="handle">☰</span>
           </div>
         </div>
@@ -26,10 +26,10 @@
       chosen-class="chosen"
       class="virtual-list"
     >
-      <template v-slot:item="{ record, index, dateKey }">
+      <template v-slot:item="{ item, index, key }">
         <div class="list-item">
           <div class="item-title">
-            <span class="index">#  {{ record.index }}-{{ record.name }}</span>
+            <span class="index">#{{ item.index }}-{{ item.name }}</span>
             <span class="handle">☰</span>
           </div>
         </div>

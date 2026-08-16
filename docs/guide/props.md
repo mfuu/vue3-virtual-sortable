@@ -8,13 +8,21 @@
 
 The data that needs to be rendered
 
-## `data-key`
+## `dataKey`
 
-| **Type** | **Default** | **Required** |
-| -------- | ----------- | ------------ |
-| `String` | `-`         | `true`       |
+| **Type**              | **Default** | **Required** |
+| --------------------- | ----------- | ------------ |
+| `String` / `Function` | `-`         | `true`       |
 
-The unique identifier of each piece of data, in the form of `'a.b.c'`
+The unique identifier of each piece of data
+
+```js
+// String
+dataKey: 'id' // a.b.c
+
+// Function
+dataKey: (item) => item.id
+```
 
 ## `keeps`
 

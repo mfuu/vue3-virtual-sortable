@@ -7,13 +7,13 @@
     chosen-class="chosen"
     @bottom="bottomLoading"
   >
-    <template v-slot:item="{ record, index, dateKey }">
+    <template v-slot:item="{ item, index, key }">
       <div class="list-item">
         <div class="item-title">
-          <span class="index">#{{ record.index }}</span>
+          <span class="index">#{{ item.index }}</span>
           <span class="handle">☰</span>
         </div>
-        <p>{{ record.desc }}</p>
+        <p>{{ item.desc }}</p>
       </div>
     </template>
     <template v-slot:footer>
@@ -32,7 +32,7 @@ const list = ref(getPageData(50, 0));
 
 const bottomLoading = () => {
   setTimeout(() => {
-    const index = list.value.length - 1;
+    const index = list.value.length;
     const loadedList = getPageData(10, index);
     list.value.push(...loadedList);
   }, 1000);
